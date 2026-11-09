@@ -116,6 +116,7 @@ SlashCmdList.QUICKCHAT = function(msg)
   elseif cmd == "alpha" and n then SetAlpha(n > 1 and n / 100 or n); Status()
   elseif cmd == "buttons" then SetHideButtons(not DB.hideButtons)
   elseif cmd == "status" then Status()
+  elseif cmd == "debug" then ns.Skin.Debug(Print)
   else Print(L.help)
   end
 end

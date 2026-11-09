@@ -12,7 +12,7 @@ local BG      = { 0.051, 0.055, 0.071 }   -- #0D0E12, same as the QuickChannels 
 local BORDER  = { 1, 1, 1, 0.08 }
 local ACCENT  = { 0.667, 0.667, 1 }       -- #AAAAFF
 local TAB_ON  = { 1, 1, 1 }
-local TAB_OFF = { 0.78, 0.80, 0.86 }
+local TAB_OFF = { 0.86, 0.88, 0.93 }
 local PAD     = 5
 -- Blizzard docks tabs on top of the frame's Background, which sits 3px above the frame;
 -- the header strip of our panel covers the tabs so the window reads as one block.
@@ -131,6 +131,19 @@ local function SkinTab(tab)
     fs:SetPoint("CENTER", tab, "BOTTOM", 0, HEADER / 2)
     if tab.SetPushedTextOffset then tab:SetPushedTextOffset(0, 0) end
   end
+
+  -- Hard stop for tab fading: whichever path the client uses (UIFrameFade, saved alphas, XML
+  -- alpha="0.4"), the tab itself stays opaque. Its Blizzard art is gone, so only our label,
+  -- underline and alert line are affected.
+  tab:SetAlpha(1)
+  local forcing
+  hooksecurefunc(tab, "SetAlpha", function(self, a)
+    if not forcing and a ~= 1 then
+      forcing = true
+      self:SetAlpha(1)
+      forcing = nil
+    end
+  end)
 
   skinned[tab] = s
   StyleTab(tab)
@@ -364,6 +377,25 @@ end
 local function SkinAll()
   for _, frameName in ipairs(CHAT_FRAMES or {}) do SkinFrame(_G[frameName]) end
   for i = 1, (NUM_CHAT_WINDOWS or 10) do SkinFrame(_G["ChatFrame" .. i]) end
+end
+
+-- /qchat debug: what the client actually does with the tabs (for tuning on new clients).
+function Skin.Debug(out)
+  for i = 1, (NUM_CHAT_WINDOWS or 10) do
+    local tab = _G["ChatFrame" .. i .. "Tab"]
+    if tab and tab:IsShown() then
+      local fs = tab:GetFontString()
+      local r, g, b, a = fs:GetTextColor()
+      local p = tab:GetParent()
+      out(("tab%d sel=%s alpha=%.2f eff=%.2f | text a=%.2f eff=%.2f ignore=%s rgb=%.2f,%.2f,%.2f,%.2f | parent=%s eff=%.2f | skinned=%s"):format(
+        i, tostring(IsSelected(tab)), tab:GetAlpha(), tab:GetEffectiveAlpha(),
+        fs:GetAlpha(), fs.GetEffectiveAlpha and fs:GetEffectiveAlpha() or -1,
+        tostring(fs.IsIgnoringParentAlpha and fs:IsIgnoringParentAlpha()),
+        r or -1, g or -1, b or -1, a or -1,
+        p and (p:GetName() or tostring(p)) or "nil", p and p:GetEffectiveAlpha() or -1,
+        tostring(skinned[tab] ~= nil)))
+    end
+  end
 end
 
 function Skin.SetAlpha(a)
