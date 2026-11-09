@@ -357,10 +357,15 @@ local function SkinFrame(cf)
   for _, k in ipairs(BORDER_TEXTURES) do Kill(_G[name .. k]) end
 
   local s = {}
-  s.box = Box(cf, "BACKGROUND", -8)
+  -- The panel lives on its own frame in the BACKGROUND strata: chat frames sit above the tabs
+  -- (strata LOW), so textures on the chat frame itself would cover and dim the tab labels.
+  s.holder = CreateFrame("Frame", nil, cf)
+  s.holder:SetFrameStrata("BACKGROUND")
+  s.holder:SetAllPoints(cf)
+  s.box = Box(s.holder, "BACKGROUND", -8)
   s.box:Place(cf, PAD, TAB_BASE + HEADER, PAD + 2, PAD)
   -- 1px divider between the tab header and the messages
-  s.divider = cf:CreateTexture(nil, "BACKGROUND", nil, -7)
+  s.divider = s.holder:CreateTexture(nil, "BACKGROUND", nil, -7)
   s.divider:SetColorTexture(BORDER[1], BORDER[2], BORDER[3], BORDER[4])
   s.divider:SetPoint("TOPLEFT", s.box.bg, "TOPLEFT", 1, -HEADER)
   s.divider:SetPoint("TOPRIGHT", s.box.bg, "TOPRIGHT", -1, -HEADER)
