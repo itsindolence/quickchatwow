@@ -213,6 +213,79 @@ local function SkinEditBox(eb, cf)
 end
 
 ---------------------------------------------------------------------------
+-- Scroll bar: a thin flat thumb (perfect-scrollbar style) instead of the
+-- Blizzard track with arrows. Blizzard still fades the whole bar in on hover.
+---------------------------------------------------------------------------
+local THUMB_W = 3
+
+local function SetThumbColor(thumb, hot)
+  local s = skinned[thumb]
+  if not s then return end
+  if hot then
+    s.tex:SetColorTexture(ACCENT[1], ACCENT[2], ACCENT[3], 0.9)
+  else
+    s.tex:SetColorTexture(1, 1, 1, 0.35)
+  end
+end
+
+local function SkinScrollBar(cf)
+  local bar = cf.ScrollBar
+  if not bar or skinned[bar] then return end
+  skinned[bar] = true
+
+  local track = bar.Track
+  if track then
+    Kill(track.Begin); Kill(track.Middle); Kill(track.End)
+    -- arrows are gone, so the track can use the full height
+    track:ClearAllPoints()
+    track:SetPoint("TOP", bar, "TOP", 0, -2)
+    track:SetPoint("BOTTOM", bar, "BOTTOM", 0, 2)
+
+    local thumb = track.Thumb
+    if thumb then
+      -- Blizzard swaps atlases on these per mouse state; keeping them transparent is enough.
+      for _, k in ipairs({ "Begin", "Middle", "End" }) do
+        if thumb[k] then thumb[k]:SetAlpha(0) end
+      end
+      local t = thumb:CreateTexture(nil, "OVERLAY")
+      t:SetPoint("TOP", thumb, "TOP", 0, 0)
+      t:SetPoint("BOTTOM", thumb, "BOTTOM", 0, 0)
+      t:SetWidth(THUMB_W)
+      skinned[thumb] = { tex = t }
+      SetThumbColor(thumb, false)
+      thumb:HookScript("OnEnter", function(self) SetThumbColor(self, true) end)
+      thumb:HookScript("OnLeave", function(self)
+        if not IsMouseButtonDown("LeftButton") then SetThumbColor(self, false) end
+      end)
+      thumb:HookScript("OnMouseUp", function(self)
+        if not self:IsMouseOver() then SetThumbColor(self, false) end
+      end)
+    end
+  end
+
+  for _, k in ipairs({ "Back", "Forward" }) do
+    local b = bar[k]
+    if b then
+      if b.Texture then b.Texture:SetAlpha(0) end
+      b:SetAlpha(0)
+      b:EnableMouse(false)
+    end
+  end
+
+  -- "jump to newest" arrow: keep Blizzard's shape, but flat grey with an accent flash
+  local jump = cf.ScrollToBottomButton
+  if jump then
+    for _, get in ipairs({ "GetNormalTexture", "GetPushedTexture", "GetDisabledTexture" }) do
+      local t = jump[get] and jump[get](jump)
+      if t then t:SetDesaturated(true); t:SetVertexColor(0.8, 0.8, 0.85) end
+    end
+    local hl = jump.GetHighlightTexture and jump:GetHighlightTexture()
+    if hl then hl:SetDesaturated(true); hl:SetVertexColor(ACCENT[1], ACCENT[2], ACCENT[3]) end
+    if jump.Flash then jump.Flash:SetDesaturated(true); jump.Flash:SetVertexColor(ACCENT[1], ACCENT[2], ACCENT[3]) end
+  end
+end
+
+---------------------------------------------------------------------------
 -- Chat window
 ---------------------------------------------------------------------------
 local BORDER_TEXTURES = {
@@ -267,6 +340,7 @@ local function SkinFrame(cf)
   local rb = cf.ResizeButton or _G[name .. "ResizeButton"]
   if rb and rb.SetAlpha then rb:SetAlpha(0.35) end
 
+  SkinScrollBar(cf)
   SkinTab(_G[name .. "Tab"])
   FixTabAlpha(cf)
   SkinEditBox(cf.editBox or _G[name .. "EditBox"], cf)
