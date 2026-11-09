@@ -106,6 +106,9 @@ local function SkinTab(tab)
   s.hover:SetColorTexture(1, 1, 1, 0.06)
   s.hover:SetPoint("TOPLEFT", tab, "BOTTOMLEFT", 2, HEADER - 1)
   s.hover:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -2, 1)
+  -- Blizzard fades whole tabs to 20-40% when the mouse leaves the chat; label and underline opt
+  -- out of that so the header always reads clearly, whatever the client's fade code does.
+  if s.line.SetIgnoreParentAlpha then s.line:SetIgnoreParentAlpha(true) end
 
   -- "new message" glow becomes a thin pulsing line in the underline spot
   local glow = tab.glow or (name and _G[name .. "Glow"])
@@ -122,6 +125,7 @@ local function SkinTab(tab)
   local fs = tab.GetFontString and tab:GetFontString()
   if fs then
     fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 1)
+    if fs.SetIgnoreParentAlpha then fs:SetIgnoreParentAlpha(true) end
     -- centre the label in the header strip (Blizzard places it 5px below the 32px tab's middle)
     fs:ClearAllPoints()
     fs:SetPoint("CENTER", tab, "BOTTOM", 0, HEADER / 2)
