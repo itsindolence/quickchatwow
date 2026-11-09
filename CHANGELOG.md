@@ -1,6 +1,7 @@
 # Changelog
 
 ## 0.2.0
+- The channel colour bar on the input line shows only while typing (no stray bar on an idle input line).
 - Flat thin scroll bar (no arrows or track), accent colour on hover; grey "jump to newest" arrow.
 - Tabs now sit in a header strip of the chat panel, with a thin divider above the messages.
 - Tabs stay readable when the mouse leaves the chat (no more fading to 20-40%).

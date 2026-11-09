@@ -209,6 +209,12 @@ local function SkinEditBox(eb, cf)
     if attr == "chattype" or attr == "channeltarget" then ColorEditBox(box) end
   end)
   eb:HookScript("OnShow", ColorEditBox)
+  -- With the "IM" chat style Blizzard keeps an idle input line at 35% alpha; the channel accent
+  -- only makes sense while typing, so it shows on focus.
+  local function UpdateFocus(box) s.accent:SetShown(box:HasFocus() and true or false) end
+  eb:HookScript("OnEditFocusGained", UpdateFocus)
+  eb:HookScript("OnEditFocusLost", UpdateFocus)
+  UpdateFocus(eb)
   ColorEditBox(eb)
 end
 
