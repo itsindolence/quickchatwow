@@ -14,6 +14,12 @@ local ACCENT  = { 0.667, 0.667, 1 }       -- #AAAAFF
 local TAB_ON  = { 1, 1, 1 }
 local TAB_OFF = { 0.62, 0.65, 0.72 }
 local PAD     = 5
+-- Blizzard docks tabs on top of the frame's Background, which sits 3px above the frame;
+-- the header strip of our panel covers the tabs so the window reads as one block.
+local TAB_BASE = 3
+local HEADER   = 24
+-- Tabs stay readable instead of fading to 20-40% when the mouse leaves the chat.
+local TAB_ALPHA_IDLE = 0.75
 
 local skinned = {}       -- [blizzard frame] = our own textures (kept off Blizzard tables)
 local DB
@@ -92,14 +98,14 @@ local function SkinTab(tab)
   -- accent underline for the selected tab
   s.line = tab:CreateTexture(nil, "ARTWORK")
   s.line:SetColorTexture(ACCENT[1], ACCENT[2], ACCENT[3], 1)
-  s.line:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", 8, 2)
-  s.line:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -8, 2)
+  s.line:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", 6, 0)
+  s.line:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -6, 0)
   s.line:SetHeight(2)
-  -- soft hover
+  -- soft hover, limited to the header strip
   s.hover = tab:CreateTexture(nil, "HIGHLIGHT")
   s.hover:SetColorTexture(1, 1, 1, 0.06)
-  s.hover:SetPoint("TOPLEFT", tab, "TOPLEFT", 4, -6)
-  s.hover:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -4, 0)
+  s.hover:SetPoint("TOPLEFT", tab, "BOTTOMLEFT", 2, HEADER - 1)
+  s.hover:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -2, 1)
 
   -- "new message" glow becomes a thin pulsing line in the underline spot
   local glow = tab.glow or (name and _G[name .. "Glow"])
@@ -108,8 +114,8 @@ local function SkinTab(tab)
     glow:SetColorTexture(1, 1, 1, 0.9)
     glow:SetBlendMode("BLEND")
     glow:ClearAllPoints()
-    glow:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", 8, 2)
-    glow:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -8, 2)
+    glow:SetPoint("BOTTOMLEFT", tab, "BOTTOMLEFT", 6, 0)
+    glow:SetPoint("BOTTOMRIGHT", tab, "BOTTOMRIGHT", -6, 0)
     glow:SetHeight(2)
   end
 
@@ -120,10 +126,34 @@ local function SkinTab(tab)
   StyleTab(tab)
 end
 
+-- Blizzard keeps per-tab alphas in ChatFrameUtil (read through securecallfunction, so writes from
+-- addons are expected there). Older clients keep them on the tab itself.
+local settingAlphas
+local function TabAlphas(tab)
+  local selected = IsSelected(tab)
+  return 1, selected and 1 or TAB_ALPHA_IDLE
+end
+
+local function FixTabAlpha(cf)
+  local tab = cf and cf.GetName and _G[cf:GetName() .. "Tab"]
+  if not tab or not skinned[tab] then return end
+  local over, idle = TabAlphas(tab)
+  if ChatFrameUtil and ChatFrameUtil.SetTabAlphas then
+    settingAlphas = true
+    ChatFrameUtil.SetTabAlphas(tab, over, idle)
+    settingAlphas = nil
+  else
+    tab.mouseOverAlpha, tab.noMouseAlpha = over, idle
+  end
+  if UIFrameFadeRemoveFrame then UIFrameFadeRemoveFrame(tab) end
+  tab:SetAlpha(cf.hasBeenFaded and over or idle)
+end
+
 local function StyleAllTabs()
   for obj in pairs(skinned) do
     if obj.GetFontString and obj.GetID and not obj.AddMessage and _G["ChatFrame" .. obj:GetID() .. "Tab"] == obj then
       StyleTab(obj)
+      FixTabAlpha(_G["ChatFrame" .. obj:GetID()])
     end
   end
 end
@@ -144,8 +174,18 @@ local function ColorEditBox(eb)
   if info then s.accent:SetColorTexture(info.r or 1, info.g or 1, info.b or 1, 1) end
 end
 
-local function SkinEditBox(eb)
+local EB_GAP   = 4   -- space between the chat panel and the input line
+local EB_INSET = 4   -- the edit box is 32px tall; our box is drawn 4px inside top and bottom
+
+local function SkinEditBox(eb, cf)
   if not eb or skinned[eb] then return end
+  -- Line the input up with the chat panel edges (Blizzard ties its right edge to the scroll bar).
+  if cf then
+    local y = -(PAD + EB_GAP - EB_INSET)
+    eb:ClearAllPoints()
+    eb:SetPoint("TOPLEFT", cf, "BOTTOMLEFT", -PAD, y)
+    eb:SetPoint("TOPRIGHT", cf, "BOTTOMRIGHT", PAD + 2, y)
+  end
   local name = eb:GetName()
   if name then
     for _, k in ipairs({ "Left", "Right", "Mid", "FocusLeft", "FocusRight", "FocusMid" }) do
@@ -156,7 +196,7 @@ local function SkinEditBox(eb)
 
   local s = {}
   s.box = Box(eb, "BACKGROUND", -6)
-  s.box:Place(eb, -5, -4, -5, -4)
+  s.box:Place(eb, 0, -EB_INSET, 0, -EB_INSET)
   s.box:SetColor(0.02, 0.025, 0.035, 0.92)
   s.accent = eb:CreateTexture(nil, "BORDER")
   s.accent:SetPoint("TOPLEFT", s.box.bg, "TOPLEFT", 1, -1)
@@ -213,7 +253,13 @@ local function SkinFrame(cf)
 
   local s = {}
   s.box = Box(cf, "BACKGROUND", -8)
-  s.box:Place(cf, PAD, PAD, PAD + 2, PAD)
+  s.box:Place(cf, PAD, TAB_BASE + HEADER, PAD + 2, PAD)
+  -- 1px divider between the tab header and the messages
+  s.divider = cf:CreateTexture(nil, "BACKGROUND", nil, -7)
+  s.divider:SetColorTexture(BORDER[1], BORDER[2], BORDER[3], BORDER[4])
+  s.divider:SetPoint("TOPLEFT", s.box.bg, "TOPLEFT", 1, -HEADER)
+  s.divider:SetPoint("TOPRIGHT", s.box.bg, "TOPRIGHT", -1, -HEADER)
+  s.divider:SetHeight(1)
   skinned[cf] = s
   ApplyAlpha(cf)
 
@@ -222,7 +268,8 @@ local function SkinFrame(cf)
   if rb and rb.SetAlpha then rb:SetAlpha(0.35) end
 
   SkinTab(_G[name .. "Tab"])
-  SkinEditBox(cf.editBox or _G[name .. "EditBox"])
+  FixTabAlpha(cf)
+  SkinEditBox(cf.editBox or _G[name .. "EditBox"], cf)
 end
 
 local function SkinAll()
@@ -252,4 +299,15 @@ function Skin.Enable(db)
   end
   if FCF_DockUpdate then hooksecurefunc("FCF_DockUpdate", StyleAllTabs) end
   if FCFDock_SelectWindow then hooksecurefunc("FCFDock_SelectWindow", StyleAllTabs) end
+  if FCFTab_UpdateAlpha then hooksecurefunc("FCFTab_UpdateAlpha", FixTabAlpha) end
+  if ChatFrameUtil and ChatFrameUtil.SetTabAlphas then
+    hooksecurefunc(ChatFrameUtil, "SetTabAlphas", function(tab)
+      if not settingAlphas and tab and tab.GetID and skinned[tab] then
+        local over, idle = TabAlphas(tab)
+        settingAlphas = true
+        ChatFrameUtil.SetTabAlphas(tab, over, idle)
+        settingAlphas = nil
+      end
+    end)
+  end
 end
