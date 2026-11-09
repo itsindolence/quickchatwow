@@ -12,14 +12,14 @@ local BG      = { 0.051, 0.055, 0.071 }   -- #0D0E12, same as the QuickChannels 
 local BORDER  = { 1, 1, 1, 0.08 }
 local ACCENT  = { 0.667, 0.667, 1 }       -- #AAAAFF
 local TAB_ON  = { 1, 1, 1 }
-local TAB_OFF = { 0.62, 0.65, 0.72 }
+local TAB_OFF = { 0.78, 0.80, 0.86 }
 local PAD     = 5
 -- Blizzard docks tabs on top of the frame's Background, which sits 3px above the frame;
 -- the header strip of our panel covers the tabs so the window reads as one block.
 local TAB_BASE = 3
-local HEADER   = 24
+local HEADER   = 28
 -- Tabs stay readable instead of fading to 20-40% when the mouse leaves the chat.
-local TAB_ALPHA_IDLE = 0.75
+local TAB_ALPHA_IDLE = 1
 
 local skinned = {}       -- [blizzard frame] = our own textures (kept off Blizzard tables)
 local DB
@@ -120,7 +120,13 @@ local function SkinTab(tab)
   end
 
   local fs = tab.GetFontString and tab:GetFontString()
-  if fs then fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 1) end
+  if fs then
+    fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 1)
+    -- centre the label in the header strip (Blizzard places it 5px below the 32px tab's middle)
+    fs:ClearAllPoints()
+    fs:SetPoint("CENTER", tab, "BOTTOM", 0, HEADER / 2)
+    if tab.SetPushedTextOffset then tab:SetPushedTextOffset(0, 0) end
+  end
 
   skinned[tab] = s
   StyleTab(tab)
