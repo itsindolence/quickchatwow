@@ -451,11 +451,23 @@ function Skin.Enable(db)
     hooksecurefunc("FCFDock_UpdateTabs", function(dock)
       if not dock or not dock.DOCKED_CHAT_FRAMES then return end
       if dock.overflowButton and dock.overflowButton:IsShown() then return end
+      local lastStatic, firstDynamic
       for _, f in ipairs(dock.DOCKED_CHAT_FRAMES) do
-        local tab = not f.isStaticDocked and _G[f:GetName() .. "Tab"]
-        if tab and skinned[tab] and not (FCF_HasSecretName and FCF_HasSecretName(f)) then
-          PanelTemplates_TabResize(tab, tab.sizePadding or 0)
+        local tab = _G[f:GetName() .. "Tab"]
+        if f.isStaticDocked then
+          lastStatic = tab
+        elseif tab and skinned[tab] then
+          firstDynamic = firstDynamic or tab
+          if not (FCF_HasSecretName and FCF_HasSecretName(f)) then
+            PanelTemplates_TabResize(tab, tab.sizePadding or 0)
+          end
         end
+      end
+      -- Blizzard starts the scrolling tabs 1px lower than the static ones; with nothing to scroll,
+      -- line the first one (and the rest, chained to it) up with the static row.
+      if lastStatic and firstDynamic then
+        firstDynamic:ClearAllPoints()
+        firstDynamic:SetPoint("BOTTOMLEFT", lastStatic, "BOTTOMRIGHT", 1, 0)
       end
     end)
   end
