@@ -1,0 +1,14 @@
+## Interface: 16001, 11509, 20506, 38002, 50504, 120100, 120105, 120107
+## Title: QuickChat
+## Notes: Clean, flat, modern look for the default chat windows
+## Notes-ruRU: Чистый плоский современный вид стандартных окон чата
+## Version: @project-version@
+## Author: QuickChat contributors
+## SavedVariables: QuickChatDB
+## Category: Chat
+## IconTexture: Interface\ChatFrame\UI-ChatIcon-Chat-Up
+## X-License: MIT
+
+Locales.lua
+Skin.lua
+Core.lua

@@ -1,0 +1,10 @@
+package-as: QuickChat
+
+enable-nolib-creation: no
+
+ignore:
+  - "*.ps1"
+
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
