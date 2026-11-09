@@ -8,6 +8,7 @@
 ## Category: Chat
 ## IconTexture: Interface\ChatFrame\UI-ChatIcon-Chat-Up
 ## X-License: MIT
+## X-Curse-Project-ID: 1794357
 
 Locales.lua
 Skin.lua
