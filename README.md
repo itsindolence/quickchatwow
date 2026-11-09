@@ -12,6 +12,9 @@
   на неактивной вкладке мигают линией.
 - Строка ввода: плоское поле с цветной полоской слева в цвет текущего канала (сказать, группа, гильдия…).
 - Боковые кнопки чата (меню, каналы, друзья, голосовой чат) скрыты (можно вернуть в настройках).
+- Тонкая плоская полоса прокрутки без стрелок.
+- В строке ввода стрелки ↑/↓ листают отправленные ранее сообщения (последние 32) без зажатого Alt,
+  ←/→ двигают курсор. Работает и с выключенным оформлением, отключается в настройках.
 
 ## Установка
 **WoW Forever:** `World of Warcraft\_forever_\Interface\AddOns\QuickChat\`. После установки нового
@@ -28,6 +31,7 @@
 | `/qchat on` / `off` | включить / выключить оформление (выключение — после перезагрузки UI) |
 | `/qchat alpha 0-100` | прозрачность фона чата |
 | `/qchat buttons` | скрыть / показать боковые кнопки (после перезагрузки UI) |
+| `/qchat arrows` | стрелки листают историю сообщений без Alt / вернуть как было |
 | `/qchat status` | текущие настройки |
 
 ## Языки
@@ -48,5 +52,7 @@ chat messages. Standalone, no addon suite needed.
 - Flat tabs with an accent underline on the selected tab; new-message alerts pulse as a thin line.
 - Flat input line with a channel-coloured accent bar.
 - Chat side buttons hidden (optional).
+- Thin flat scroll bar.
+- Up/Down in the input line browse your last sent messages without holding Alt (optional).
 
-Settings: **Options → AddOns → QuickChat** or `/qchat` (`on`, `off`, `alpha <0-100>`, `buttons`, `status`).
+Settings: **Options → AddOns → QuickChat** or `/qchat` (`on`, `off`, `alpha <0-100>`, `buttons`, `arrows`, `status`).

@@ -18,10 +18,12 @@ LOCALES.enUS = {
   later       = "Later",
   on          = "on",
   off         = "off",
-  status      = "chat style: %s, background %d%%, side buttons %s",
+  arrows      = "Arrow keys browse sent messages",
+  arrowsTip   = "While typing, Up/Down go through the messages you sent earlier and Left/Right move the cursor, without holding Alt.",
+  status      = "chat style: %s, background %d%%, side buttons %s, arrow-key history %s",
   hidden      = "hidden",
   shown       = "shown",
-  help        = "commands: /qchat (settings), on, off, alpha <0-100>, buttons, status",
+  help        = "commands: /qchat (settings), on, off, alpha <0-100>, buttons, arrows, status",
 }
 
 LOCALES.ruRU = {
@@ -36,10 +38,12 @@ LOCALES.ruRU = {
   later       = "Позже",
   on          = "вкл",
   off         = "выкл",
-  status      = "стиль чата: %s, фон %d%%, боковые кнопки %s",
+  arrows      = "Стрелки листают отправленные сообщения",
+  arrowsTip   = "Во время набора стрелки вверх/вниз перебирают сообщения, которые вы отправляли раньше, а влево/вправо двигают курсор — без зажатого Alt.",
+  status      = "стиль чата: %s, фон %d%%, боковые кнопки %s, история по стрелкам %s",
   hidden      = "скрыты",
   shown       = "видны",
-  help        = "команды: /qchat (настройки), on, off, alpha <0-100>, buttons, status",
+  help        = "команды: /qchat (настройки), on, off, alpha <0-100>, buttons, arrows, status",
 }
 
 local en = LOCALES.enUS

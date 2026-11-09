@@ -7,6 +7,7 @@ local DEFAULTS = {
   enabled = true,
   alpha = 0.6,
   hideButtons = true,
+  arrowHistory = true,
 }
 
 local DB
@@ -53,6 +54,11 @@ local function SetHideButtons(v)
   AskReload()
 end
 
+local function SetArrowHistory(v)
+  DB.arrowHistory = v and true or false
+  ns.Input.Apply(DB)
+end
+
 local function SetAlpha(a)
   a = math.max(0, math.min(1, a))
   if ns.Skin.enabled then ns.Skin.SetAlpha(a) else DB.alpha = a end
@@ -85,6 +91,10 @@ local function RegisterSettings()
     function() return DB.hideButtons end, SetHideButtons)
   Settings.CreateCheckbox(cat, s, L.buttonsTip)
 
+  s = Settings.RegisterProxySetting(cat, "QUICKCHAT_ARROWS", BOOL, L.arrows, DEFAULTS.arrowHistory,
+    function() return DB.arrowHistory end, SetArrowHistory)
+  Settings.CreateCheckbox(cat, s, L.arrowsTip)
+
   Settings.RegisterAddOnCategory(cat)
   category = cat
 end
@@ -101,7 +111,7 @@ end
 ---------------------------------------------------------------------------
 local function Status()
   Print(L.status:format(DB.enabled and L.on or L.off, math.floor(DB.alpha * 100 + 0.5),
-    DB.hideButtons and L.hidden or L.shown))
+    DB.hideButtons and L.hidden or L.shown, DB.arrowHistory and L.on or L.off))
 end
 
 SLASH_QUICKCHAT1 = "/qchat"
@@ -115,6 +125,7 @@ SlashCmdList.QUICKCHAT = function(msg)
   elseif cmd == "off" then SetEnabled(false)
   elseif cmd == "alpha" and n then SetAlpha(n > 1 and n / 100 or n); Status()
   elseif cmd == "buttons" then SetHideButtons(not DB.hideButtons)
+  elseif cmd == "arrows" then SetArrowHistory(not DB.arrowHistory); Status()
   elseif cmd == "status" then Status()
   elseif cmd == "debug" then ns.Skin.Debug(Print)
   else Print(L.help)
@@ -136,6 +147,7 @@ events:SetScript("OnEvent", function(self, event, arg1)
     if not ok then category = nil; geterrorhandler()(err) end
   elseif event == "PLAYER_LOGIN" then
     if DB.enabled then ns.Skin.Enable(DB) end
+    ns.Input.Enable(DB)
     self:UnregisterAllEvents()
   end
 end)

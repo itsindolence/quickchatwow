@@ -11,4 +11,5 @@
 
 Locales.lua
 Skin.lua
+Input.lua
 Core.lua
