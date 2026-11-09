@@ -20,6 +20,8 @@ local TAB_BASE = 3
 local HEADER   = 28
 -- Tabs stay readable instead of fading to 20-40% when the mouse leaves the chat.
 local TAB_ALPHA_IDLE = 1
+-- Blizzard's GameFontNormalSmall (10px) renders thin and greyish; tabs use the chat font instead.
+local TAB_FONT_SIZE = 12
 
 local skinned = {}       -- [blizzard frame] = our own textures (kept off Blizzard tables)
 local DB
@@ -124,6 +126,8 @@ local function SkinTab(tab)
 
   local fs = tab.GetFontString and tab:GetFontString()
   if fs then
+    local font = ChatFontNormal and ChatFontNormal:GetFont()
+    if font then fs:SetFont(font, TAB_FONT_SIZE, "") end
     fs:SetShadowOffset(1, -1); fs:SetShadowColor(0, 0, 0, 1)
     if fs.SetIgnoreParentAlpha then fs:SetIgnoreParentAlpha(true) end
     -- centre the label in the header strip (Blizzard places it 5px below the 32px tab's middle)
@@ -421,6 +425,8 @@ function Skin.Enable(db)
   if FCF_DockUpdate then hooksecurefunc("FCF_DockUpdate", StyleAllTabs) end
   if FCFDock_SelectWindow then hooksecurefunc("FCFDock_SelectWindow", StyleAllTabs) end
   if FCFTab_UpdateAlpha then hooksecurefunc("FCFTab_UpdateAlpha", FixTabAlpha) end
+  -- tab widths were measured with Blizzard's smaller font; let the dock re-measure them
+  if FCF_DockUpdate then FCF_DockUpdate() end
   if ChatFrameUtil and ChatFrameUtil.SetTabAlphas then
     hooksecurefunc(ChatFrameUtil, "SetTabAlphas", function(tab)
       if not settingAlphas and tab and tab.GetID and skinned[tab] then
