@@ -9,11 +9,26 @@ local Input = {}
 ns.Input = Input
 
 local DB
+local hooked = {}
 
 local function ApplyTo(eb)
-  if eb and eb.SetAltArrowKeyMode then
-    eb:SetAltArrowKeyMode(not DB.arrowHistory)
+  if not (eb and eb.SetAltArrowKeyMode) then return end
+  eb:SetAltArrowKeyMode(not DB.arrowHistory)
+  -- re-assert on every focus, in case something switched the mode back while the box was closed
+  if not hooked[eb] then
+    hooked[eb] = true
+    eb:HookScript("OnEditFocusGained", function(self)
+      if DB then self:SetAltArrowKeyMode(not DB.arrowHistory) end
+    end)
   end
+end
+
+function Input.Debug(out)
+  local eb = ChatFrame1EditBox
+  if not eb then out("input: no ChatFrame1EditBox"); return end
+  out(("input: option=%s altArrowMode=%s historyLines=%s shown=%s focus=%s"):format(
+    tostring(DB and DB.arrowHistory), tostring(eb.GetAltArrowKeyMode and eb:GetAltArrowKeyMode()),
+    tostring(eb.GetHistoryLines and eb:GetHistoryLines()), tostring(eb:IsShown()), tostring(eb:HasFocus())))
 end
 
 function Input.Apply(db)

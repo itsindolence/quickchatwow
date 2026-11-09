@@ -127,7 +127,7 @@ SlashCmdList.QUICKCHAT = function(msg)
   elseif cmd == "buttons" then SetHideButtons(not DB.hideButtons)
   elseif cmd == "arrows" then SetArrowHistory(not DB.arrowHistory); Status()
   elseif cmd == "status" then Status()
-  elseif cmd == "debug" then ns.Skin.Debug(Print)
+  elseif cmd == "debug" then ns.Skin.Debug(Print); if ns.Input then ns.Input.Debug(Print) end
   else Print(L.help)
   end
 end
