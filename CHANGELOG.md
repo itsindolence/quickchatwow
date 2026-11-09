@@ -1,7 +1,8 @@
 # Changelog
 
 ## 0.2.0
-- Arrow keys browse your sent messages in the input line without holding Alt (option, on by default; `/qchat arrows`).
+- Up/Down in the input line browse your last 50 sent messages without holding Alt, kept between sessions
+  (option, on by default; `/qchat arrows`).
 - The channel colour bar on the input line shows only while typing (no stray bar on an idle input line).
 - Flat thin scroll bar (no arrows or track), accent colour on hover; the "jump to newest" arrow is hidden.
 - Tabs now sit in a header strip of the chat panel (drawn below the tabs), with a thin divider above the messages.
