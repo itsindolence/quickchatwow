@@ -278,16 +278,15 @@ local function SkinScrollBar(cf)
     end
   end
 
-  -- "jump to newest" arrow: keep Blizzard's shape, but flat grey with an accent flash
+  -- "jump to newest" arrow: not part of the perfect-scrollbar look. It stays in place (the scroll
+  -- bar is anchored to it and Blizzard fades it), but draws nothing and takes no clicks.
   local jump = cf.ScrollToBottomButton
   if jump then
-    for _, get in ipairs({ "GetNormalTexture", "GetPushedTexture", "GetDisabledTexture" }) do
-      local t = jump[get] and jump[get](jump)
-      if t then t:SetDesaturated(true); t:SetVertexColor(0.8, 0.8, 0.85) end
+    for _, get in ipairs({ "GetNormalTexture", "GetPushedTexture", "GetDisabledTexture", "GetHighlightTexture" }) do
+      Kill(jump[get] and jump[get](jump))
     end
-    local hl = jump.GetHighlightTexture and jump:GetHighlightTexture()
-    if hl then hl:SetDesaturated(true); hl:SetVertexColor(ACCENT[1], ACCENT[2], ACCENT[3]) end
-    if jump.Flash then jump.Flash:SetDesaturated(true); jump.Flash:SetVertexColor(ACCENT[1], ACCENT[2], ACCENT[3]) end
+    Kill(jump.Flash)
+    jump:EnableMouse(false)
   end
 end
 
