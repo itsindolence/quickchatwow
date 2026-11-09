@@ -359,11 +359,25 @@ local function SkinFrame(cf)
   local s = {}
   -- The panel lives on its own frame in the BACKGROUND strata: chat frames sit above the tabs
   -- (strata LOW), so textures on the chat frame itself would cover and dim the tab labels.
-  s.holder = CreateFrame("Frame", nil, cf)
+  -- It is parented to UIParent (a child of the chat frame would be pulled back up whenever the
+  -- chat frame's strata changes) and follows the chat frame's visibility instead.
+  s.holder = CreateFrame("Frame", nil, UIParent)
   s.holder:SetFrameStrata("BACKGROUND")
+  if s.holder.SetFixedFrameStrata then s.holder:SetFixedFrameStrata(true) end
   s.holder:SetAllPoints(cf)
+  s.holder:SetShown(cf:IsShown())
+  cf:HookScript("OnShow", function() s.holder:Show() end)
+  cf:HookScript("OnHide", function() s.holder:Hide() end)
   s.box = Box(s.holder, "BACKGROUND", -8)
   s.box:Place(cf, PAD, TAB_BASE + HEADER, PAD + 2, PAD)
+  -- Tabs sit on Blizzard's Background, which is pushed down below the combat log's quick
+  -- buttons; the header follows the same anchor so it always wraps the tabs.
+  local bbg = cf.Background or _G[name .. "Background"]
+  if bbg then
+    s.box.bg:ClearAllPoints()
+    s.box.bg:SetPoint("TOPLEFT", bbg, "TOPLEFT", -(PAD - 2), HEADER)
+    s.box.bg:SetPoint("BOTTOMRIGHT", cf, "BOTTOMRIGHT", PAD + 2, -PAD)
+  end
   -- 1px divider between the tab header and the messages
   s.divider = s.holder:CreateTexture(nil, "BACKGROUND", nil, -7)
   s.divider:SetColorTexture(BORDER[1], BORDER[2], BORDER[3], BORDER[4])
@@ -403,6 +417,11 @@ function Skin.Debug(out)
         r or -1, g or -1, b or -1, a or -1,
         p and (p:GetName() or tostring(p)) or "nil", p and p:GetEffectiveAlpha() or -1,
         tostring(skinned[tab] ~= nil)))
+      local cf = _G["ChatFrame" .. i]
+      local h = skinned[cf] and skinned[cf].holder
+      out(("  layers: tab %s/%d | chat %s/%d | panel %s/%d"):format(
+        tab:GetFrameStrata(), tab:GetFrameLevel(), cf:GetFrameStrata(), cf:GetFrameLevel(),
+        h and h:GetFrameStrata() or "-", h and h:GetFrameLevel() or -1))
     end
   end
 end
